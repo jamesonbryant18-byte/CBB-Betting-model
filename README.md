@@ -38,6 +38,8 @@ once, logged in `research/holdout_log.csv`).
   `players`, `ratings`, `model`, `replay` (backtest), `pricing`, `bets`,
   `evaluate`, `features` (metrics under test)
 - `data/params.json`: fitted parameters, written only by `tune.py --save`
+- `data/lines/`: finished seasons' betting lines, archived in git (the source
+  may stop serving them); `fetch.py` never overwrites them without `--rebuild-lines`
 - `research/`: generated reports (`RESULTS.md`, `metric_tests.md`,
   `line_audit.md`, `line_movement.md`), `tuning_log.csv`, `test_database.csv`.
   Results are quoted from these files, never typed by hand.

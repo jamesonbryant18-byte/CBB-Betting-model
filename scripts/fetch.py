@@ -3,9 +3,12 @@ Download everything the model reads, and report coverage.
 
     .venv/bin/python scripts/fetch.py            # all seasons, then odds
     .venv/bin/python scripts/fetch.py --current  # just refresh the current season
+    .venv/bin/python scripts/fetch.py --rebuild-lines   # also re-parse archived seasons' lines
 
 Box scores: every season FIRST_SEASON..CURRENT_SEASON (hoopR archive + ESPN top-up).
 Lines: every date from 2019-20 on (Action Network), one cached file per day.
+Finished seasons' parsed lines are archived in data/lines/ (tracked) and are
+NOT rebuilt unless --rebuild-lines: the source may no longer serve them.
 Writes data/team_crosswalk.csv (Action Network id -> ESPN id), which is tracked.
 """
 import argparse
@@ -13,7 +16,7 @@ import argparse
 import pandas as pd
 
 from cbb import data, odds
-from cbb.config import CACHE, CURRENT_SEASON, FIRST_SEASON
+from cbb.config import CURRENT_SEASON, FIRST_SEASON
 from cbb.espn import today_et
 
 ODDS_FIRST_SEASON = 2020
@@ -28,6 +31,8 @@ def season_dates(season: int) -> tuple[pd.Timestamp, pd.Timestamp]:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--current", action="store_true", help="only the current season")
+    ap.add_argument("--rebuild-lines", action="store_true",
+                    help="re-parse archived seasons' lines from the raw cache (overwrites data/lines/)")
     args = ap.parse_args()
     seasons = [CURRENT_SEASON] if args.current else list(range(FIRST_SEASON, CURRENT_SEASON + 1))
 
@@ -43,10 +48,15 @@ def main():
     odds_seasons = [s for s in seasons if s >= ODDS_FIRST_SEASON]
     frames = []
     for s in odds_seasons:
-        start, end = season_dates(s)
-        o = odds.history(start, end, verbose=True)
-        o["season"] = s
-        o.to_parquet(CACHE / f"odds_{s}.parquet")
+        path = odds.season_file(s)
+        if s < CURRENT_SEASON and path.exists() and not args.rebuild_lines:
+            o = pd.read_parquet(path)                      # archived: keep it
+        else:
+            start, end = season_dates(s)
+            o = odds.history(start, end, verbose=True)
+            o["season"] = s
+            path.parent.mkdir(parents=True, exist_ok=True)
+            o.to_parquet(path)
         frames.append(o)
         print(f"  odds {s}: {o.an_id.nunique()} games, books {o.book.value_counts().to_dict()}")
     if not args.current:

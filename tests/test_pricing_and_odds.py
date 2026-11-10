@@ -70,3 +70,10 @@ def test_v2_main_line_not_alternate():
     main = _main_market(spread, "home", "away", opposite=True)
     assert main["home"]["value"] == 1.5 and main["away"]["odds"] == -118
     assert _main_market([o(2, "home", -1.5, 120)], "home", "away", opposite=True) == {}
+
+
+def test_finished_seasons_lines_are_archived_not_cached():
+    from cbb.config import CACHE, CURRENT_SEASON, LINES
+    from cbb.odds import season_file
+    assert season_file(CURRENT_SEASON - 1).parent == LINES      # tracked in git, never overwritten
+    assert season_file(CURRENT_SEASON).parent == CACHE          # rebuilt every fetch

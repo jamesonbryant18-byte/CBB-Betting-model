@@ -21,6 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 CACHE = DATA / "cache"
+LINES = DATA / "lines"       # finished seasons' lines: tracked in git, never overwritten
 PICKS = ROOT / "picks"
 OUTPUT = ROOT / "output"
 RESEARCH = ROOT / "research"

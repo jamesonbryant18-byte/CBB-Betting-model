@@ -29,7 +29,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .config import CACHE, DATA
+from .config import CACHE, CURRENT_SEASON, DATA, LINES
 from .pricing import american_to_prob
 
 BOOKS = {15: "consensus", 30: "open", 68: "draftkings", 69: "fanduel"}
@@ -318,6 +318,18 @@ def attach(games: pd.DataFrame, odds: pd.DataFrame, book: str,
 
 # ─────────────────────────── the closing-lines table ───────────────────────────
 
+def season_file(season: int) -> Path:
+    """
+    Where a season's parsed lines live.
+
+    Finished seasons are archived in data/lines/ (tracked in git): Action
+    Network's v2 feed, the only source of FanDuel for Nov 2025 - Feb 2026,
+    keeps past dates only for a while, so a re-download could come back
+    poorer. The current season is rebuilt every fetch and stays in the cache.
+    """
+    return (LINES if season < CURRENT_SEASON else CACHE) / f"odds_{season}.parquet"
+
+
 # Which book is "the close" for a game: FanDuel when it has the game (what he
 # bets), else the consensus number (the only one stored before 2023-24), else
 # DraftKings. The opener comes from Action Network's opening-line book.
@@ -328,7 +340,7 @@ def closing_lines(games: pd.DataFrame, seasons) -> pd.DataFrame:
     """One row per game with a line: the close (by CLOSE_PREFERENCE) and the opener."""
     frames = []
     for s in seasons:
-        path = CACHE / f"odds_{s}.parquet"
+        path = season_file(s)
         if path.exists():
             frames.append(pd.read_parquet(path))
     if not frames:

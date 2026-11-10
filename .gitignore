@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.DS_Store
+.env
+# Downloaded data rebuilds from the sources with scripts/fetch.py
+data/cache/
+# Workbooks are built per run; the record of what was published lives in picks/
+output/
+~$*.xlsx

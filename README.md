@@ -4,8 +4,9 @@ A men's college basketball model that bets FanDuel spreads and moneylines,
 $1 a bet, only where its edge over the FanDuel price survives an honest
 backtest.
 
-**Status: research phase.** Data, model, tuning and backtests are built.
-The daily runs and the workbook come after the design is approved.
+**Status: research phase done; the build plan is a draft under review.**
+See [PLAN.md](PLAN.md). Data, the ratings model, tuning and backtests are
+built. Nothing in the plan is built until it is approved.
 
 ## How it works, in one paragraph
 
